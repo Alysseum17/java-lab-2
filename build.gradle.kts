@@ -24,6 +24,9 @@ tasks.withType<JavaCompile>().configureEach {
     options.release.set(25)
 }
 
-//tasks.test {
-//    useJUnitPlatform()
-//}
+tasks.test {
+    useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
+}
