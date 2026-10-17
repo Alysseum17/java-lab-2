@@ -29,4 +29,9 @@ tasks.test {
     testLogging {
         events("passed", "skipped", "failed")
     }
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
 }
