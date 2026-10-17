@@ -1,17 +1,41 @@
 package ua.kpi.comsys.collections;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-public class Main {
-    static void main() {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        IO.println(String.format("Hello and welcome!"));
+import java.util.List;
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            IO.println("i = " + i);
+public class Main {
+
+    public static void main(String[] args) {
+        LogAnalyzer analyzer = new LogAnalyzer();
+
+        List<String> logs = List.of(
+                "127.0.0.1 ident alice [01/May/2025:07:20:10 +0000] \"GET /index.html HTTP/1.1\" 200 9481",
+                "10.0.0.2 - - [01/May/2025:07:20:11 +0000] \"GET /about.html HTTP/1.1\" 200 512",
+                "10.0.0.2 - - [01/May/2025:07:20:12 +0000] \"POST /login HTTP/1.1\" 302 -",
+                "9.0.0.1 - - [01/May/2025:07:20:13 +0000] \"GET / HTTP/1.1\" 200 1024",
+                "127.0.0.1 - bob [01/May/2025:07:20:14 +0000] \"GET /style.css HTTP/1.1\" 200 2048",
+                "this is not a log line",
+                "999.1.1.1 - - [01/May/2025:07:20:15 +0000] \"GET / HTTP/1.1\" 200 1");
+
+        System.out.println("Unique IPs: " + analyzer.getUniqueIps(logs));
+        System.out.println("Top 2 IPs: " + analyzer.getTopIps(logs, 2));
+        System.out.println("Top 10 IPs: " + analyzer.getTopIps(logs, 10) + "\n");
+
+        try {
+            analyzer.getUniqueIps(null);
+        } catch (IllegalArgumentException e) {
+            System.out.println("getUniqueIps(null) -> " + e.getMessage());
+        }
+
+        try {
+            analyzer.getTopIps(null, 3);
+        } catch (IllegalArgumentException e) {
+            System.out.println("getTopIps(null, 3) -> " + e.getMessage());
+        }
+
+        try {
+            analyzer.getTopIps(logs, 0);
+        } catch (IllegalArgumentException e) {
+            System.out.println("getTopIps(logs, 0) -> " + e.getMessage());
         }
     }
 }
