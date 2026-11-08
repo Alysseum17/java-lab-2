@@ -1,4 +1,4 @@
-# Лабораторна робота №2 — Gradle та Java Collections Framework
+# Лабораторна робота №2 — Збірка проєкту за допомогою Gradle та робота з Java Collections Framework
 
 ## Опис проєкту
 
@@ -170,6 +170,18 @@ java -version
 - унікальність IP-адрес, частоти, `topN` і лексикографічний *tie-breaking*;
 - порожні списки, `null`-елементи та необхідні винятки.
 
+HTML-звіт із результатами тестування знаходиться за шляхом:
+
+```text
+build/reports/tests/test/index.html
+```
+
+У звіті відображаються кількість виконаних тестів, відсоток успішності, час виконання та помилки(якщо є).
+
+**Скриншот результатів JUnit 5:**
+
+<img width="1102" height="603" alt="image" src="https://github.com/user-attachments/assets/1637ba5d-6c67-49cc-9b05-c1f70fe9ec2b" />
+
 ## Покриття коду
 
 Для оцінювання покриття використовується **JaCoCo**. У конфігурації Gradle генерація звіту запускається автоматично після виконання тестів.
@@ -189,7 +201,6 @@ build/reports/jacoco/test/html/index.html
 **Скриншот звіту JaCoCo:**
 
 <img width="1103" height="217" alt="image" src="https://github.com/user-attachments/assets/850f6e74-a0d1-4072-838e-e8fb549e3173" />
-
 
 ## Технології
 
