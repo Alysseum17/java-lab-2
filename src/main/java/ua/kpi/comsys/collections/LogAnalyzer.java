@@ -1,9 +1,15 @@
+
 package ua.kpi.comsys.collections;
 
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -14,12 +20,43 @@ public class LogAnalyzer {
 
     private static final String OCTET = "(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)";
     private static final String IP = OCTET + "(?:\\." + OCTET + "){3}";
-    private static final String DATE = "\\d{2}/[A-Za-z]{3}/\\d{4}(?::\\d{2}){3} [+-]\\d{4}";
+
+    private static final String IDENT = "(?:-|[A-Za-z0-9_][A-Za-z0-9._@-]*)";
+    private static final String USER = "(?:-|[A-Za-z0-9_][A-Za-z0-9._@-]*)";
+
+    private static final String DAY = "(?:0[1-9]|[12]\\d|3[01])";
+    private static final String MONTH = "(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)";
+    private static final String DATE = DAY + "/" + MONTH + "/\\d{4}";
+    private static final String TIME = "(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d";
+    private static final String TIME_ZONE = "[+-](?:[01]\\d|2[0-3])[0-5]\\d";
+    private static final String DATE_TIME = DATE + ":" + TIME + " " + TIME_ZONE;
+
+    private static final String TIMESTAMP =
+            "(?:\\[(?<timestamp>" + DATE_TIME + "|-)\\]|-)";
+
+    private static final String METHOD =
+            "(?:GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS|TRACE|CONNECT)";
+    private static final String TARGET_CHAR = "[^\\s\"\\x00-\\x1F\\x7F]";
+    private static final String TARGET =
+            "(?:/" + TARGET_CHAR + "*|https?://" + TARGET_CHAR
+                    + "+|\\*|[A-Za-z0-9.-]+:\\d{1,5})";
+    private static final String HTTP_VERSION = "HTTP/\\d+(?:\\.\\d+)?";
+
+    private static final String REQUEST =
+            "(?:\"(?:" + METHOD + " " + TARGET + " " + HTTP_VERSION + "|-)\"|-)";
+
+    private static final String STATUS = "(?:[1-5]\\d{2}|-)";
+    private static final String BYTES = "(?:\\d+|-)";
 
     private static final Pattern CLF_LINE = Pattern.compile(
-            "(" + IP + ") \\S+ \\S+ \\[" + DATE + "] \"[^\"]*\" \\d{3} (?:\\d+|-)");
+            "(?<ip>" + IP + ") " + IDENT + " " + USER + " " + TIMESTAMP
+                    + " " + REQUEST + " " + STATUS + " " + BYTES);
 
-    public Set<String> getUniqueIps(List<String> logLines)  {
+    private static final DateTimeFormatter LOG_DATE_FORMAT = DateTimeFormatter
+            .ofPattern("dd/MMM/uuuu:HH:mm:ss Z", Locale.ENGLISH)
+            .withResolverStyle(ResolverStyle.STRICT);
+
+    public Set<String> getUniqueIps(List<String> logLines) {
         requireLogLines(logLines);
         return new LinkedHashSet<>(extractIps(logLines));
     }
@@ -53,11 +90,25 @@ public class LogAnalyzer {
             if (line == null) {
                 continue;
             }
+
             Matcher matcher = CLF_LINE.matcher(line);
-            if (matcher.matches()) {
-                ips.add(matcher.group(1));
+            if (matcher.matches() && isValidTimestamp(matcher.group("timestamp"))) {
+                ips.add(matcher.group("ip"));
             }
         }
         return ips;
+    }
+
+    private static boolean isValidTimestamp(String timestamp) {
+        if (timestamp == null || timestamp.equals("-")) {
+            return true;
+        }
+
+        try {
+            OffsetDateTime.parse(timestamp, LOG_DATE_FORMAT);
+            return true;
+        } catch (DateTimeParseException ex) {
+            return false;
+        }
     }
 }
